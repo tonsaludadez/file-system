@@ -15,6 +15,10 @@ class TreeNode{
     this.parent = parent;
     this.info = info;
     children = new ArrayList<>();
+
+    if(parent!=null){
+    	parent.insertChild(this);
+    }
   }
 
   void insertChild(TreeNode child){
@@ -31,6 +35,10 @@ class TreeNode{
 
   boolean isFolder(){
     return info.isDir;
+  }
+
+  String displayContent(){
+  	return info.content;
   }
 }
 
@@ -70,6 +78,18 @@ class FileDescriptor{
   FileDescriptor(String filename, boolean isDir){
     this.filename = filename;
     this.isDir = isDir;
+
+    if(isDir){
+    	this.setContent("");
+    }
+  }
+
+  void setContent(String new_content){
+  	content = new_content;
+  }
+
+  void appendContent(String new_content){
+  	content += new_content;
   }
 
   void displayFileInfo(){
@@ -87,7 +107,7 @@ class FileDescriptor{
 class FileSystem{
 
   enum Command {
-    CD, MKDIR, RMDIR, EXIT, LS, INVALID, EDIT
+    CD, MKDIR, RMDIR, EXIT, LS, INVALID, EDIT, CP
   }
 
   Tree tree;
@@ -252,7 +272,7 @@ class FileSystem{
 
           FileDescriptor temp_info = new FileDescriptor(temp_rest[0], true);
           TreeNode temp_node = new TreeNode(temp_curr, temp_info);
-          temp_curr.insertChild(temp_node);
+          //temp_curr.insertChild(temp_node);
         }
 
         else{
@@ -287,7 +307,7 @@ class FileSystem{
         }
 
         else{
-          System.out.println("rmdir: mising operand");
+          System.out.println("rmdir: missing operand");
         }
         break;
 
@@ -317,16 +337,62 @@ class FileSystem{
               }
 
               if(!valid){
-                System.out.println("edit: cannot create file '" + rest[0] + "': No such file or directory");
+                System.out.println("edit: cannot create file '" + rest[0] + "': No such directory");
                 return;
               }
             }
 
             temp_rest[0] = temp_rest[temp_rest.length-1]; 
           }
+
+          FileDescriptor new_info;
+          TreeNode edit_node = null;
+
+          for(int i = 0; i < temp_curr.children.size(); i++){
+            if(temp_curr.children.get(i).getName().equals(temp_rest[0])){
+              edit_node = temp_curr.children.get(i);
+              System.out.print(edit_node.displayContent());
+              break;
+            }
+          }
+
+          if(edit_node == null){
+          	new_info = new FileDescriptor(temp_rest[0], false);
+          	edit_node = new TreeNode(temp_curr, new_info);
+          }
+
+          Scanner scan = new Scanner(System.in);
+
+          String added = "";
+          String temp_add;
+          char[] _temp;
+
+          while(true){
+          	temp_add = scan.nextLine();
+          	_temp = temp_add.toCharArray();
+
+	        if(_temp.length >= 2){
+	          	if(_temp[_temp.length-2] == '$' && _temp[_temp.length-1] == '#'){
+	          		added += temp_add.substring(0, temp_add.length()-2);
+	          		break;
+	          	}
+	        }
+
+	        added += temp_add;
+	        added += "\n";
+	      
+          }
+
+          edit_node.info.appendContent(added);
+
+
         }
 
         break;
+
+      case CP:
+      	break;
+
       case EXIT: 
         break;
 

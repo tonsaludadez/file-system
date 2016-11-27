@@ -1,0 +1,151 @@
+usage: mkdir <directory name>
+cmsc
+cmsc
+movies
+sp
+mkdir: sp: Already exists
+cmsc
+movies
+sp
+cmsc
+movies
+sp
+cd: cmsc11: No such file or directory
+cmsc11
+cmsc142
+cmsc11
+cmsc142
+romcom
+cd: ../../movies/horror: No such file or directory
+cd: /root/movies/horror: No such file or directory
+cmsc
+movies
+sp
+usage: cp source_file/source_directory target_file/target_directory
+cmsc
+comsci1
+movies
+sp
+cmsc
+comsci1
+comsci2
+move1
+movie1
+movies
+movies1
+movies2
+sp
+cmsc
+comsci1
+comsci2
+movies
+movies1
+movies2
+sp
+cmsc
+comsci1
+comsci2
+movies
+movies1
+movies2
+sp
+cmsc
+comsci1
+comsci2
+move1
+movie1
+movies
+movies1
+movies2
+sp
+comsci1
+move1
+movie1
+movies1
+cmsc
+comsci1
+comsci2
+move1
+movie1
+movies
+movies1
+movies2
+sp
+movies
+movies1
+movies2
+move
+move1
+movie1
+movies
+movies1
+movies2
+cmsc11
+cmsc142
+#include <iostream>
+
+using namespace std;
+
+int main(){
+	cout<<"Hello World!\n"<<endl;
+	return 0;
+}
+#include <iostream>
+
+using namespace std;
+
+int main(){
+	cout<<"Hello World!\n"<<endl;
+	return 0;
+}
+//this is a test for the append using >>
+hello.cpp
+#include <iostream>
+
+using namespace std;
+
+int main(){
+	cout<<"Hello World!\n"<<endl;
+	return 0;
+}
+//this is a test for the append using >>
+//this is the result of editing the file using edit
+#include <iostream>
+
+using namespace std;
+
+int main(){
+	cout<<"Hello Philippines and hello world!\n";
+	return 0;
+}
+hello.cpp
+one.cpp
+two.cpp
+cmsc11
+cmsc142
+one.cpp
+cmsc11
+cmsc142
+newone.cpp
+cmsc
+comsci1
+comsci2
+move1
+movie1
+movies
+movies1
+movies2
+sp
+comsci
+comsci1
+comsci2
+move1
+movie1
+movies
+movies1
+movies2
+sp
+cmsc11
+cmsc142
+newone.cpp
+cd: cmsc: No such file or directory
