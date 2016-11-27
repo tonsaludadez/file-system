@@ -68,7 +68,7 @@ class FileDescriptor{
   String filename;
   boolean isDir;
   String content;
- 
+
   FileDescriptor(){
     filename = "root";
     isDir = true;
@@ -491,23 +491,131 @@ class FileSystem{
         break;
 
       case LS:
-        if(current.children.size() > 0){
-          System.out.println();
-          for(int i = 0, j = 0; i < current.children.size(); i++, j++){
-            System.out.print(current.children.get(i).getName());
-            if(current.children.get(i).isFolder()){
-              System.out.print("/  ");
-            }
-            else{
-              System.out.print("  ");
-            }
-            if(j == 4){
-              System.out.println();
-              j = 0;
-            }
-          }
-          System.out.println();
-        }
+      	if(rest == null){
+	        if(current.children.size() > 0){
+	          System.out.println();
+	          for(int i = 0, j = 0; i < current.children.size(); i++, j++){
+	            System.out.print(current.children.get(i).getName());
+	            if(current.children.get(i).isFolder()){
+	              System.out.print("/  ");
+	            }
+	            else{
+	              System.out.print("  ");
+	            }
+	            if(j == 4){
+	              System.out.println();
+	              j = 0;
+	            }
+	          }
+	          System.out.println();
+	        }
+	    }
+	    else{
+	    	String ls_string = rest[0];
+	    	char[] ls_charArr = ls_string.toCharArray();
+	    	int count = 0;
+
+	    	for(int i = 0; i < ls_charArr.length; i++){
+	    		if(ls_charArr[i] == '*'){
+	    			count++;
+	    		}
+	    	}
+
+	    	int[] pos = new int[count];
+
+	    	for(int i = 0, j = 0; i < ls_charArr.length;i++){
+	    		if(ls_charArr[i] == '*'){
+	    			pos[j] = i;
+	    			j++;
+	    		}
+	    	}
+
+	    	if(count > 1){
+				char[] ls_temp = Arrays.copyOfRange(ls_charArr, 1, ls_charArr.length-1);
+	    		String ls_tempString = String.valueOf(ls_temp);
+
+	    		for(int i = 0, j = 0; i < current.children.size(); i++){
+	    			if(current.children.get(i).getName().contains(ls_tempString)){
+	    				System.out.print(current.children.get(i).getName());
+		            		if(current.children.get(i).isFolder()){
+		              			System.out.print("/  ");
+		            		}
+		            		else{
+		              			System.out.print("  ");
+		            		}
+		            		if(j == 4){
+		              			System.out.println();
+		              			j = 0;
+		            		}	
+	    			}
+	    		}
+	    	}
+
+	    	//only one *
+	    	else if(count == 1){
+	    		//start
+	    		if(pos[0] == 0){
+	    			char[] ls_temp = Arrays.copyOfRange(ls_charArr, 1, ls_charArr.length);
+	    			String ls_tempString = String.valueOf(ls_temp);
+
+	    			for(int i = 0, j = 0; i < current.children.size(); i++){
+	    				if(current.children.get(i).getName().length() > ls_temp.length){
+		    				String temp_name = current.children.get(i).getName().substring(current.children.get(i).getName().length() - ls_temp.length, current.children.get(i).getName().length());
+	
+		    				if(temp_name.equals(ls_tempString)){
+		    					System.out.print(current.children.get(i).getName());
+		            			if(current.children.get(i).isFolder()){
+		              				System.out.print("/  ");
+		            			}
+		            			else{
+		              				System.out.print("  ");
+		            			}
+		            			if(j == 4){
+		              				System.out.println();
+		              				j = 0;
+		            			}
+		    				}
+	    				}
+	    			}
+
+	    		}
+
+	    		//last
+	    		else if(pos[0] == ls_charArr.length-1){
+	    			char[] ls_temp = Arrays.copyOfRange(ls_charArr, 0, ls_charArr.length-1);
+	    			String ls_tempString = String.valueOf(ls_temp);
+
+	    			for(int i = 0, j = 0; i < current.children.size(); i++){
+	    				if(current.children.get(i).getName().length() > ls_temp.length){
+		    				String temp_name = current.children.get(i).getName().substring(0, pos[0]);
+	
+		    				if(temp_name.equals(ls_tempString)){
+		    					System.out.print(current.children.get(i).getName());
+		            			if(current.children.get(i).isFolder()){
+		              				System.out.print("/  ");
+		            			}
+		            			else{
+		              				System.out.print("  ");
+		            			}
+		            			if(j == 4){
+		              				System.out.println();
+		              				j = 0;
+		            			}
+		    				}
+	    				}
+	    			}
+	    		}
+
+	    		//somewhere in the middle
+	    		else{
+	    			System.out.println("not implemented");
+	    		}
+
+	    	}
+
+	    	System.out.println();
+	    }
+
         break;
 
       case INVALID:
