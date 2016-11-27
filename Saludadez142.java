@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.*;
 
 class TreeNode{
@@ -33,6 +34,10 @@ class TreeNode{
     return info.filename;
   }
 
+  void setName(String new_name){
+  	info.filename = new_name;
+  }
+
   boolean isFolder(){
     return info.isDir;
   }
@@ -40,6 +45,20 @@ class TreeNode{
   String displayContent(){
   	return info.content;
   }
+
+ void sortChildren(){
+ 	for(int i = 0; i < children.size(); i++){
+ 		for(int j = i+1; j <children.size(); j++){
+ 			if(children.get(i).getName().compareTo(children.get(j).getName()) > 0){
+ 				TreeNode temp = children.get(j);
+ 				children.set(j, children.get(i));
+ 				children.set(i, temp);
+ 			}
+ 		}
+ 		
+ 	}
+ } 
+
 }
 
 class Tree{
@@ -107,7 +126,7 @@ class FileDescriptor{
 class FileSystem{
 
   enum Command {
-    CD, MKDIR, RMDIR, EXIT, LS, INVALID, EDIT, CP
+    CD, MKDIR, RMDIR, EXIT, LS, INVALID, EDIT, CP, SHOW, RN, MV
   }
 
   Tree tree;
@@ -131,6 +150,9 @@ class FileSystem{
 
   void parseCommand(String command_line){
     String splittedString[] = command_line.split(" ");
+    if(splittedString[0].equals(">") || splittedString[0].equals(">>")){
+    	splittedString[0] = "edit";
+    }
 
     if(inEnum(splittedString[0])){
       command = Command.valueOf(splittedString[0].toUpperCase());
@@ -274,12 +296,13 @@ class FileSystem{
           for(int i = 0; i < temp_curr.children.size(); i++){
             if(temp_curr.children.get(i).getName().equals(temp_rest[0])){
               System.out.println("mkdir: cannot create directory '" + rest[0] + "': File exists");
-              break;
+              return;
             }
           }
 
           FileDescriptor temp_info = new FileDescriptor(temp_rest[0], true);
           TreeNode temp_node = new TreeNode(temp_curr, temp_info);
+          temp_curr.sortChildren();
           //temp_curr.insertChild(temp_node);
         }
 
@@ -392,6 +415,7 @@ class FileSystem{
           }
 
           edit_node.info.appendContent(added);
+          System.out.println();
 
 
         }
@@ -415,11 +439,6 @@ class FileSystem{
       		for(int i = 0; i < temp_curr.children.size(); i++){
 
       			if(temp_curr.children.get(i).getName().equals(temp_origNode)){
-      				if(temp_curr.children.get(i).isFolder()){
-      					System.out.println("cp: omitting directory '" + temp_curr.children.get(i).getName() +"'");
-      					return;
-      				}
-
       				cp_origNode = temp_curr.children.get(i);
       				break;
       			}
@@ -442,26 +461,27 @@ class FileSystem{
       				}
       				
 	      			for(; x < temp_rest.length-1; x++){
-	      				System.out.println(temp_curr.getName());
 	      				found = false;
 
-	      				for(int j = 0; j < temp_curr.children.size(); j++){
+	      				if(temp_rest[x].equals("..")){
+	      					temp_curr = temp_curr.parent;
+	      					found = true;
+	      				}
 
-	      					if(temp_curr.children.get(j).getName().equals(temp_rest[x]) && temp_curr.children.get(j).isFolder()){
-	      						temp_curr = temp_curr.children.get(j);
-	      						found = true;
-	      						break;
-	      					}
+	      				else{
+		      				for(int j = 0; j < temp_curr.children.size(); j++){
 
-	      					if(x == temp_rest.length-1 && 
-	      						temp_curr.children.get(j).getName().equals(temp_rest[x]) &&
-	      						!temp_curr.children.get(j).isFolder()){
-	      						exists = true;
-	      						found = true;
-	      						found_pos = j;
+		      					if(temp_curr.children.get(j).getName().equals(temp_rest[x]) && temp_curr.children.get(j).isFolder()){
+		      						temp_curr = temp_curr.children.get(j);
+		      						found = true;
 
-	      						break;
-	      					}
+		      						if(x == temp_rest.length-1){
+		      							exists = true;
+		      						}
+
+		      						break;
+		      					}
+		      				}
 
 	      				}
 
@@ -474,6 +494,16 @@ class FileSystem{
 
 	      		}
 
+	      		else{
+	      			for(int i = 0; i < temp_curr.children.size(); i++){
+	      				if(temp_curr.children.get(i).getName().equals(temp_rest[temp_rest.length-1])){
+	      					exists = true;
+	      					found_pos = i;
+	      					break;
+	      				}
+	      			}
+	      		}
+
       		}
 
 	      	if(exists){
@@ -481,9 +511,15 @@ class FileSystem{
 	      	}
 
       		TreeNode cp_newNode;
-	      	FileDescriptor cp_fileDescriptor = new FileDescriptor(temp_rest[temp_rest.length-1], false);
+	      	FileDescriptor cp_fileDescriptor = new FileDescriptor(temp_rest[temp_rest.length-1], cp_origNode.info.isDir);
 	      	cp_fileDescriptor.setContent(cp_origNode.info.content);
 	      	cp_newNode = new TreeNode(temp_curr, cp_fileDescriptor);
+
+	      	temp_curr.sortChildren();
+      	}
+
+      	else{
+      		System.out.println("cp: missing file operand");
       	}
       	break;
 
@@ -559,7 +595,7 @@ class FileSystem{
 	    			String ls_tempString = String.valueOf(ls_temp);
 
 	    			for(int i = 0, j = 0; i < current.children.size(); i++){
-	    				if(current.children.get(i).getName().length() > ls_temp.length){
+	    				if(current.children.get(i).getName().length() >= ls_temp.length){
 		    				String temp_name = current.children.get(i).getName().substring(current.children.get(i).getName().length() - ls_temp.length, current.children.get(i).getName().length());
 	
 		    				if(temp_name.equals(ls_tempString)){
@@ -586,7 +622,7 @@ class FileSystem{
 	    			String ls_tempString = String.valueOf(ls_temp);
 
 	    			for(int i = 0, j = 0; i < current.children.size(); i++){
-	    				if(current.children.get(i).getName().length() > ls_temp.length){
+	    				if(current.children.get(i).getName().length() >= ls_temp.length){
 		    				String temp_name = current.children.get(i).getName().substring(0, pos[0]);
 	
 		    				if(temp_name.equals(ls_tempString)){
@@ -618,6 +654,45 @@ class FileSystem{
 
         break;
 
+      case SHOW:
+      	 if(rest != null){
+          String temp_rest = rest[0];
+
+          TreeNode show_node = null;
+
+          for(int i = 0; i < current.children.size(); i++){
+            if(current.children.get(i).getName().equals(temp_rest)){
+              show_node = current.children.get(i);
+              System.out.print(show_node.displayContent().substring(4, show_node.info.content.length()));
+              System.out.println();
+              return;
+            }
+          }
+
+          if(show_node == null){
+          	System.out.println("NOT FOUND");
+          }
+        }
+
+        else{
+        	System.out.println("show: missing file operand");
+        }
+
+        break;
+      case RN:
+      	if(rest != null){
+      		for(int i = 0; i < current.children.size(); i++){
+      			if(current.children.get(i).getName().equals(rest[0])){
+      				current.children.get(i).setName(rest[1]);
+      				return;
+      			}
+      		}
+
+      		System.out.println("rn: cannot rename file: No such file or directory");
+      	}
+
+      	break;
+
       case INVALID:
         System.out.println(rest[0] + ": command not found");
         break;
@@ -629,17 +704,51 @@ class FileSystem{
 
     //current.info.displayFileInfo();
 
-    Scanner scan = new Scanner(System.in);
+    fs.readFile();
+    //fs.manualInput();
+  }
 
-    while(fs.command != Command.valueOf("EXIT")){
-      fs.printDirectory(fs.current);
+  void manualInput(){
+	Scanner scan = new Scanner(System.in);
+
+    while(command != Command.valueOf("EXIT")){
+      printDirectory(current);
       System.out.print("\n$ ");
       String command_line = scan.nextLine(); 
 
-      fs.parseCommand(command_line);
+      parseCommand(command_line);
 
-      fs.execute();
+      execute();
       System.out.println();
+  	}
+  }
+
+  void readFile(){
+  	String line = null;
+  	String input_file = "mp3.in";
+
+  	try{
+  		FileReader fr = new FileReader(input_file);
+
+  		BufferedReader br = new BufferedReader(fr);
+  		int i = 0;
+
+  		while((line = br.readLine()) != null) {
+  			//System.out.println("LINE " + i + ": " + line);
+  			parseCommand(line);
+  			execute();
+  			//System.out.println();
+  			i++;
+  		}
+  	}
+  	catch(FileNotFoundException ex) {
+        System.out.println(
+            "Unable to open file '" + 
+            input_file + "'");                
+    }
+
+    catch(IOException ex) {
+		ex.printStackTrace();
     }
   }
 }
