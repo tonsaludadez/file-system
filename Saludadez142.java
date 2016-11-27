@@ -68,7 +68,7 @@ class FileDescriptor{
   String filename;
   boolean isDir;
   String content;
-
+ 
   FileDescriptor(){
     filename = "root";
     isDir = true;
@@ -245,13 +245,21 @@ class FileSystem{
 
             for(; i < temp_rest.length - 1; i++){
               valid = false;
+              
+              if(temp_rest[i].equals("..")){
+               	temp_curr = temp_curr.parent;
+                valid = true;
+              }
 
-              for(int j = 0; j < temp_curr.children.size(); j++){
-                if(temp_curr.children.get(j).getName().equals(temp_rest[i]) && temp_curr.children.get(j).isFolder()){
-                  temp_curr = temp_curr.children.get(j);
-                  valid = true;
-                  break;
-                }
+              else{
+	              for(int j = 0; j < temp_curr.children.size(); j++){
+
+	                if(temp_curr.children.get(j).getName().equals(temp_rest[i]) && temp_curr.children.get(j).isFolder()){
+	                  temp_curr = temp_curr.children.get(j);
+	                  valid = true;
+	                  break;
+	                }
+	              }
               }
 
               if(!valid){
@@ -351,7 +359,7 @@ class FileSystem{
           for(int i = 0; i < temp_curr.children.size(); i++){
             if(temp_curr.children.get(i).getName().equals(temp_rest[0])){
               edit_node = temp_curr.children.get(i);
-              System.out.print(edit_node.displayContent());
+              System.out.print(edit_node.displayContent().substring(4, edit_node.info.content.length()));
               break;
             }
           }
@@ -391,6 +399,92 @@ class FileSystem{
         break;
 
       case CP:
+      	if(rest != null){
+      		if(rest.length<2){
+      			System.out.println("cp: missing destination file operand after '" + rest[0] +"'");
+      			return;
+      		}
+
+      		String temp_origNode = rest[0];
+      		String temp_rest[] = rest[1].split("/");
+          	TreeNode temp_curr = current;
+          	TreeNode cp_origNode = null;
+          	boolean exists = false;
+          	int found_pos = 0;
+
+      		for(int i = 0; i < temp_curr.children.size(); i++){
+
+      			if(temp_curr.children.get(i).getName().equals(temp_origNode)){
+      				if(temp_curr.children.get(i).isFolder()){
+      					System.out.println("cp: omitting directory '" + temp_curr.children.get(i).getName() +"'");
+      					return;
+      				}
+
+      				cp_origNode = temp_curr.children.get(i);
+      				break;
+      			}
+      		}
+
+      		if(cp_origNode == null){
+      			System.out.println("cp: cannot stat '" + temp_rest[0] +"' No such file or directory");
+      			return;
+      		}
+
+      		else{
+      			
+      			if(temp_rest.length >= 2){
+      				int x = 0;
+
+      				if(temp_rest[1].equals("root")){
+      					temp_curr = tree.root;
+      					x = 2;
+      					found = true;
+      				}
+      				
+	      			for(; x < temp_rest.length-1; x++){
+	      				System.out.println(temp_curr.getName());
+	      				found = false;
+
+	      				for(int j = 0; j < temp_curr.children.size(); j++){
+
+	      					if(temp_curr.children.get(j).getName().equals(temp_rest[x]) && temp_curr.children.get(j).isFolder()){
+	      						temp_curr = temp_curr.children.get(j);
+	      						found = true;
+	      						break;
+	      					}
+
+	      					if(x == temp_rest.length-1 && 
+	      						temp_curr.children.get(j).getName().equals(temp_rest[x]) &&
+	      						!temp_curr.children.get(j).isFolder()){
+	      						exists = true;
+	      						found = true;
+	      						found_pos = j;
+
+	      						break;
+	      					}
+
+	      				}
+
+	      				if(!found){
+	      					System.out.println("cp: cannot create regular file '" + rest[1] + "': No such file or directory");
+	      					return;
+	      				}
+	      			}
+
+
+	      		}
+
+      		}
+
+	      	if(exists){
+	      		temp_curr.removeChild(temp_curr.children.get(found_pos));
+	      	}
+
+      		TreeNode cp_newNode;
+	      	FileDescriptor cp_fileDescriptor = new FileDescriptor(temp_rest[temp_rest.length-1], false);
+	      	cp_fileDescriptor.setContent(cp_origNode.info.content);
+	      	cp_newNode = new TreeNode(temp_curr, cp_fileDescriptor);
+      	}
       	break;
 
       case EXIT: 
