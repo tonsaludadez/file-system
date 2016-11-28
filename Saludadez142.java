@@ -796,7 +796,7 @@ class FileSystem implements java.io.Serializable{
     //current.info.displayFileInfo();
 
     fs.readFile();
-    //fs.manualInput();
+    fs.manualInput();
 
     fs.serialize(fs.tree.root);
 
